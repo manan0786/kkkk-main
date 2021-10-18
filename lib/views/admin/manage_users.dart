@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart';
 
-import 'new_user.dart';
+
 class ManageUsers extends StatefulWidget {
   const ManageUsers({Key key}) : super(key: key);
 
@@ -12,9 +12,13 @@ class ManageUsers extends StatefulWidget {
 }
 
 class _ManageUsersState extends State<ManageUsers> {
+
+  Color badge = Colors.green;
+
+
   /*    DECLARE  VARIABLES    */
   final Stream<QuerySnapshot> user=FirebaseFirestore.instance.collection('users').snapshots();
-  bool isactive = true;
+  String isactive = "true";
 ////////////////////////////////////////////////////
   /*     REFERENCES TO FIRESTORE DB      */
   CollectionReference users = FirebaseFirestore.instance.collection('users');
@@ -30,12 +34,39 @@ class _ManageUsersState extends State<ManageUsers> {
   Future<void> updateUser(id, name) {
     return users
         .doc(id)
-        .update({'name': name})
+        .update({'active': "false"})
+        .then((value) => ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.orangeAccent,
+        content: Text(
+          'User Status Banned',
+          style: TextStyle(fontSize: 18.0),
+        ),
+      ),
+    ),
+
+    )
+        .catchError((error) => ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(
+          'Failed to update user data',
+          style: TextStyle(fontSize: 18.0),
+        ),
+      ),
+    ));
+  }
+
+  //Updating User
+  Future<void> updateUser2(id, name) {
+    return users
+        .doc(id)
+        .update({'active': "true"})
         .then((value) => ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.green,
         content: Text(
-          'User Data Updated',
+          'User Status Active',
           style: TextStyle(fontSize: 18.0),
         ),
       ),
@@ -57,13 +88,7 @@ class _ManageUsersState extends State<ManageUsers> {
       appBar: AppBar(
         title: Text('Manage Users'),
         centerTitle: true,
-        actions: [
-        IconButton(onPressed: (){
-          Navigator.push(context, CupertinoPageRoute(builder: (context) => NewUser(),
-          ),
-          );
-        }, icon:Icon(Icons.add) )
-        ],
+
       ),
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
@@ -200,7 +225,7 @@ class _ManageUsersState extends State<ManageUsers> {
                                       child: Badge(
                                         toAnimate: false,
                                         shape: BadgeShape.square,
-                                        badgeColor: Colors.green,
+                                        badgeColor: badge,
                                         borderRadius: BorderRadius.circular(8),
                                         badgeContent: Text(storedocs[i]['active'].toString() , style: TextStyle(color: Colors.white)),
                                       ),
@@ -212,22 +237,22 @@ class _ManageUsersState extends State<ManageUsers> {
                                       children: [
                                         IconButton(
                                           onPressed: () => {
-
+                                            updateUser(storedocs[i]['id'], storedocs[i]['active'])
                                           },
                                           icon: Icon(
-                                            Icons.edit,
+                                            Icons.do_disturb_alt_outlined,
                                             color: Colors.orange,
                                             size: 20,
                                           ),
                                         ),
                                         IconButton(
                                           onPressed: () => {
+                                            updateUser2(storedocs[i]['id'], storedocs[i]['active']),
 
-
-                                          },
+                                        },
                                           icon: Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
+                                            Icons.add_circle,
+                                            color: Colors.orange,
                                             size: 20,
                                           ),
                                         ),

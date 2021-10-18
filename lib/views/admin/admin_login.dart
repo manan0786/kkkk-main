@@ -14,49 +14,67 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
-
-  var email = "";
-  var password = "";
+  bool _obscureText = true;
+  var email = "admin@feedapp.com";
+  var password = "admin@feed123";
   // Create a text controller and use it to retrieve the current value
   // of the TextField.
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  userLogin() async {
-    try {
-      await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Admin(),
+  userLogin() {
+  if(emailController.text == email && passwordController.text == password){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green,
+        content: Text(
+          "Login Success",
+          style: TextStyle(fontSize: 18.0, color: Colors.black),
         ),
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        print("No User Found for that Email");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "No User Found for that Email",
-              style: TextStyle(fontSize: 18.0, color: Colors.black),
-            ),
-          ),
-        );
-      } else if (e.code == 'wrong-password') {
-        print("Wrong Password Provided by User");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "Wrong Password Provided by User",
-              style: TextStyle(fontSize: 18.0, color: Colors.black),
-            ),
-          ),
-        );
-      }
-    }
+      ),
+    );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Admin(),
+      ),
+    );
+
+  }
+  else if(emailController.text != email){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(
+          "No Admin Found for that Email",
+          style: TextStyle(fontSize: 18.0, color: Colors.black),
+        ),
+      ),
+    );
+  }
+  else if(passwordController.text != password){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(
+          "Wrong Password Provided by Admin",
+          style: TextStyle(fontSize: 18.0, color: Colors.black),
+        ),
+      ),
+    );
+  }
+  else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.orangeAccent,
+        content: Text(
+          "Something Bad Happened",
+          style: TextStyle(fontSize: 18.0, color: Colors.black),
+        ),
+      ),
+    );
+  }
+
   }
 
   @override
@@ -69,6 +87,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: Text("Admin Login"),
@@ -79,6 +98,19 @@ class _LoginState extends State<Login> {
           padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
           child: ListView(
             children: [
+              SizedBox(height: 15.0,),
+              Image(
+                image: AssetImage("images/logo.png"),
+                width: 300.0,
+                height: 250.0,
+                alignment: Alignment.center,
+              ),
+              SizedBox(height: 1.0,),
+              Text(
+                "Login as a Admin",
+                style: TextStyle(fontSize: 24.0,fontFamily: "Brand Bold"),
+                textAlign: TextAlign.center,
+              ),
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10.0),
                 child: TextFormField(
@@ -104,9 +136,24 @@ class _LoginState extends State<Login> {
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10.0),
                 child: TextFormField(
+                  obscureText: _obscureText,
                   autofocus: false,
-                  obscureText: true,
                   decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        // Based on passwordVisible state choose the icon
+                        _obscureText
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Theme.of(context).primaryColorDark,
+                      ),
+                      onPressed: () {
+                        // Update the state i.e. toogle the state of passwordVisible variable
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
+                    ),
                     labelText: 'Password: ',
                     labelStyle: TextStyle(fontSize: 20.0),
                     border: OutlineInputBorder(),
@@ -120,44 +167,23 @@ class _LoginState extends State<Login> {
                     }
                     return null;
                   },
+
                 ),
               ),
               Container(
-                margin: EdgeInsets.only(left: 60.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        // Validate returns true if the form is valid, otherwise false.
-                        if (_formKey.currentState.validate()) {
-                          setState(() {
-                            email = emailController.text;
-                            password = passwordController.text;
-                          });
-                          userLogin();
-                        }
-                      },
-                      child: Text(
-                        'Login',
-                        style: TextStyle(fontSize: 18.0),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ForgotPassword(),
-                          ),
-                        )
-                      },
-                      child: Text(
-                        'Forgot Password ?',
-                        style: TextStyle(fontSize: 14.0),
-                      ),
-                    ),
-                  ],
+
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Validate returns true if the form is valid, otherwise false.
+                    if (_formKey.currentState.validate()) {
+
+                      userLogin();
+                    }
+                  },
+                  child: Text(
+                    'Login',
+                    style: TextStyle(fontSize: 18.0),
+                  ),
                 ),
               ),
 

@@ -1,11 +1,15 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterthreadexample/commons/utils.dart';
 import 'package:flutterthreadexample/controllers/FBCloudStore.dart';
 import 'package:flutterthreadexample/controllers/FBStorage.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'filters_add.dart';
 
 class AddPost extends StatefulWidget {
   @override
@@ -20,8 +24,9 @@ class _AddPost extends State<AddPost> {
   TextEditingController countryTextController = TextEditingController();
   TextEditingController topicTextController = TextEditingController();
 
-
+  var selectedLanguage, selectedCountry, selectedTopic;
   final _formKey = GlobalKey<FormState>();
+
 
   bool _isLoading = false;
   File _postImageFile;
@@ -33,8 +38,8 @@ class _AddPost extends State<AddPost> {
       postImageURL = await FBStorage.uploadCategoryImages(catID: postID, catImageFile: _postImageFile);
       print(postImageURL);
     }
-    FBCloudStore.sendCategoryInFirebase(postID,writingTextController.text,descTextController.text,langTextController.text,
-        countryTextController.text,topicTextController.text,postImageURL ?? 'NONE');
+    FBCloudStore.sendCategoryInFirebase(postID,writingTextController.text,descTextController.text,selectedLanguage,
+        selectedCountry,selectedTopic,postImageURL ?? 'NONE', 0, 0,0);
     setState(() {
       _isLoading = false;
     });
@@ -58,14 +63,13 @@ class _AddPost extends State<AddPost> {
         title: Text('Create Category'),
         centerTitle: true,
         actions: [
-          IconButton(onPressed: (){
-    if (_formKey.currentState.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-      _postToFB();
-    }
-          }, icon:Icon(Icons.add) )
+
+
+          FlatButton(
+              onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => Filters())),
+              child: Text('Add Filters',style: TextStyle(fontSize: 15,color: Colors.white,fontWeight: FontWeight.bold),)
+          )
+
         ],
       ),
       body: Padding(
@@ -164,109 +168,164 @@ class _AddPost extends State<AddPost> {
                           maxLines: null,
                         ),
                         SizedBox(height: 20,),
-                        TextFormField(
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please Enter Language';
-                            }
-                            return null;
-                          },
-                          controller: langTextController,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 42, vertical: 20),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            labelText: 'Language',
-                            suffixIcon: Icon(Icons.language),
-                          ),
-                          keyboardType: TextInputType.text,
-                        ),
-                        SizedBox(height: 20,),
-                        TextFormField(
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please Enter Country';
-                            }
-                            return null;
-                          },
-                          controller: countryTextController,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 42, vertical: 20),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            hintMaxLines: 4,
-                            labelText: 'Country',
-                            suffixIcon: Icon(Icons.flag),
-                          ),
-                          keyboardType: TextInputType.text,
-                        ),
-                        SizedBox(height: 20,),
-                        TextFormField(
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please Enter Topic';
-                            }
-                            return null;
-                          },
-                          controller: topicTextController,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 42, vertical: 20),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(28),
-                              borderSide: BorderSide(color: Colors.indigoAccent),
-                              gapPadding: 10,
-                            ),
-                            hintMaxLines: 4,
-                            labelText: 'Topic',
-                            suffixIcon: Icon(Icons.topic),
-                          ),
-                          keyboardType: TextInputType.text,
-                        ),
+                        StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection("filters").doc("language").collection("name").snapshots(),
+                            // ignore: missing_return
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData)
+                                return Center(child: CircularProgressIndicator(),);
+                              else {
+                                List<DropdownMenuItem> currencyItems = [];
+                                for (int i = 0; i < snapshot.data.docs.length; i++) {
+                                  DocumentSnapshot snap = snapshot.data.docs[i];
+                                  currencyItems.add(
+                                    DropdownMenuItem(
+                                      child: Text(
+                                        snap.get("name"),
+                                        style: TextStyle(color: Colors.indigo),
+                                      ),
+                                      value: "${snap.get("name")}",
+                                    ),
+                                  );
+                                }
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(Icons.language,
+                                        size: 25.0, color: Colors.indigo),
+                                    SizedBox(width: 50.0),
+                                    DropdownButton(
+                                      items: currencyItems,
+                                      onChanged: (currencyValue) {
+                                        setState(() {
+                                          selectedLanguage = currencyValue;
 
+                                        });
+                                      },
+                                      value: selectedLanguage,
+                                      isExpanded: false,
+                                      hint: new Text(
+                                        "Choose Language",
+                                        style: TextStyle(color: Colors.indigo),
+                                      ),
+                                    ),
+
+                                  ],
+                                );
+                              }
+                            }),
+                        SizedBox(height: 20,),
+                        StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection("filters").doc("country").collection("name").snapshots(),
+                            // ignore: missing_return
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData)
+                                return Center(child: CircularProgressIndicator(),);
+                              else {
+                                List<DropdownMenuItem> currencyItems = [];
+                                for (int i = 0; i < snapshot.data.docs.length; i++) {
+                                  DocumentSnapshot snap = snapshot.data.docs[i];
+                                  currencyItems.add(
+                                    DropdownMenuItem(
+                                      child: Text(
+                                        snap.get("name"),
+                                        style: TextStyle(color: Colors.indigo),
+                                      ),
+                                      value: "${snap.get("name")}",
+                                    ),
+                                  );
+                                }
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(Icons.flag,
+                                        size: 25.0, color: Colors.indigo),
+                                    SizedBox(width: 50.0),
+                                    DropdownButton(
+                                      items: currencyItems,
+                                      onChanged: (currencyValue) {
+                                        setState(() {
+                                          selectedCountry = currencyValue;
+
+                                        });
+                                      },
+                                      value: selectedCountry,
+                                      isExpanded: false,
+                                      hint: new Text(
+                                        "Choose Country",
+                                        style: TextStyle(color: Colors.indigo),
+                                      ),
+                                    ),
+
+                                  ],
+                                );
+                              }
+                            }),
+                        SizedBox(height: 20,),
+                        StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection("filters").doc("topic").collection("name").snapshots(),
+                            // ignore: missing_return
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData)
+                                return Center(child: CircularProgressIndicator(),);
+                              else {
+                                List<DropdownMenuItem> currencyItems = [];
+                                for (int i = 0; i < snapshot.data.docs.length; i++) {
+                                  DocumentSnapshot snap = snapshot.data.docs[i];
+                                  currencyItems.add(
+                                    DropdownMenuItem(
+                                      child: Text(
+                                        snap.get("name"),
+                                        style: TextStyle(color: Colors.indigo),
+                                      ),
+                                      value: "${snap.get("name")}",
+                                    ),
+                                  );
+                                }
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(Icons.topic,
+                                        size: 25.0, color: Colors.indigo),
+                                    SizedBox(width: 50.0),
+                                    DropdownButton(
+
+                                      items: currencyItems,
+                                      onChanged: (currencyValue) {
+
+                                        setState(() {
+                                          selectedTopic = currencyValue;
+
+                                          print(selectedTopic);
+                                        });
+                                      },
+                                      value: selectedTopic,
+
+                                      isExpanded: false,
+                                      hint: new Text(
+                                        "Choose Topic",
+                                        style: TextStyle(color: Colors.indigo),
+                                      ),
+                                    ),
+
+                              ],
+                                );
+                              }
+                            }),
 
                       ],
                     ),
                   ),
                   Center(child: Utils.loadingCircle(_isLoading)),
+                  ElevatedButton(onPressed: (){
+                    if (_formKey.currentState.validate()) {
+
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      _postToFB();
+                    }
+                  }, child: Text("Add Category"))
                 ],
               ),
             ),

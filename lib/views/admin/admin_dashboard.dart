@@ -101,8 +101,7 @@ class _AdminState extends State<Admin> {
                         CategoryCard(
                           title: "Logout",
                           svgSrc: "images/logout.png",
-                          press: ()async => {
-                            await FirebaseAuth.instance.signOut(),
+                          press: () => {
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(

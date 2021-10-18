@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterthreadexample/views/admin/admin_dashboard.dart';
+import 'package:flutterthreadexample/views/admin/admin_login.dart';
 
 import 'package:flutterthreadexample/views/forget_pass.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -11,10 +12,12 @@ import 'myHomePage.dart';
 import 'registrationScreen.dart';
 
 enum AuthFormType { anonymous }
-const String SITE_KEY = "6LcxU9UcAAAAAFU4gt02_I-y_1k8k97g99QKfgFq";
+const String SITE_KEY = "6LdlVtgcAAAAADsdaa89qQEWX5yRctTiZC7PB3-T";
 enum _VerificationStep {
   SHOWING_BUTTON, WORKING, ERROR, VERIFIED
 }
+
+
 class LoginScreen extends StatefulWidget {
   final AuthFormType authFormType;
   LoginScreen({Key key, this.authFormType}) : super(key: key);
@@ -36,7 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   var email = "";
   var password = "";
-  final _auth = FirebaseAuth.instance;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
 
   // Initially password is obscure
   bool _obscureText = true;
@@ -65,7 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       UserCredential user =await _auth.signInWithEmailAndPassword(email: email, password: password);
       if (user != null && await user.user.getIdToken() != null) {
+        print("AGAYA");
         final User currentUser = _auth.currentUser;
+        print(currentUser);
         final userID = currentUser.uid;
         print(userID);
         if (currentUser.uid == user.user.uid) {
@@ -121,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     Widget content;
-
+    bool isLoading = false;
     switch (_step) {
       case _VerificationStep.SHOWING_BUTTON:
         content = new Column(
@@ -244,16 +250,46 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(fontSize: 14.0),
                       ),
                       SizedBox(height: 10.0,),
-                      ElevatedButton(
-                          onPressed: (){
-                            if (_formKey.currentState.validate()) {
-                              setState(() {
-                                email = emailTextEditingControler.text;
-                                password = passwordTextEditingControler.text;
+                      isLoading
+                          ? CircularProgressIndicator(
+                        strokeWidth: 5,
+                      ) :ElevatedButton(
+                          onPressed: () async{
+                            setState(() {
+                              isLoading = true;
+                            });
+
+                            try {
+                              if (_formKey.currentState.validate()) {
+                                setState(() {
+                                  email = emailTextEditingControler.text;
+                                  password = passwordTextEditingControler.text;
+                                });
+                                userLogin();
+                              }
+                              await FirebaseAuth.instance.signInWithEmailAndPassword(
+                                  email: emailTextEditingControler.text,
+                                  password: passwordTextEditingControler.text
+                              ).then((value) async {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                SharedPreferences prefs=await SharedPreferences.getInstance();
+
+                                prefs.setString("email",emailTextEditingControler.text);
+                                Navigator.pushNamed(context, MyHomePage.idScreen);
                               });
-                              userLogin();
+                            }  catch (e) {
+                              if (e.code == 'user-not-found') {
+                                Navigator.pop(context);
+                                print('No user found for that email.');
+                              } else if (e.code == 'wrong-password') {
+                                Navigator.pop(context);
+                                print('Wrong password provided for that user.');
+                              }
                             }
                           },
+
                           child: Container(
                             height: 50.0,
                             child: Center(
@@ -315,6 +351,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
 
+
   Future<void> checkEmailVerified(context) async{
     User _user = await _auth.currentUser;
     if(_user.emailVerified){
@@ -337,9 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void adminLogin() async{
-   /* SharedPreferences prefs=await SharedPreferences.getInstance();
-    prefs.setString("email",emailTextEditingControler.text);*/
-    Navigator.push(context, MaterialPageRoute(builder: (context)=> Admin()));
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> Login()));
 
   }
   void LoginGuest()async{

@@ -29,7 +29,7 @@ class FBCloudStore{
     });
   }
 
-  static Future<void> sendCategoryInFirebase(String catID,String catTitle,String catDesc,String catLang,String catCountry,String catTopic,String catImageURL) async{
+  static Future<void> sendCategoryInFirebase(String catID,String catTitle,String catDesc,String catLang,String catCountry,String catTopic,String catImageURL, int catDisLike, int catLikeCount, int commentCount) async{
 
     FirebaseFirestore.instance.collection('categories').doc(catID).set({
       'catID':catID,
@@ -41,6 +41,10 @@ class FBCloudStore{
       'catCountry':catCountry,
       'catTopic':catTopic,
       'postImage':catImageURL,
+      'catDisLike': 0,
+      'catLikeCount': 0,
+      'commentCount': 0
+
     });
   }
 

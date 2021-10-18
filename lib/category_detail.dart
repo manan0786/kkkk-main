@@ -1,11 +1,14 @@
+import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:f_grecaptcha/f_grecaptcha.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterthreadexample/comment_category.dart';
 import 'package:flutterthreadexample/commons/fullPhoto.dart';
 import 'package:flutterthreadexample/commons/utils.dart';
 import 'package:flutterthreadexample/controllers/FBCloudStore.dart';
+import 'package:flutterthreadexample/post_problem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 enum AuthFormType { anonymous }
 const String SITE_KEY = "6LcxU9UcAAAAAFU4gt02_I-y_1k8k97g99QKfgFq";
@@ -16,17 +19,21 @@ enum _VerificationStep {
 
 class CategoryDetail extends StatefulWidget {
   final AuthFormType authFormType;
-
+  final String lang;
+  final String top;
+  final String cou;
   final String id;
   final String desc;
   final String title;
   final String img;
   final int time;
   final String userName;
-
+  final int like;
+  final int dislike;
+  final int commentCount;
 
   const CategoryDetail(
-      {Key key, this.id, this.desc, this.title, this.img, this.time, this.userName,this.authFormType})
+      {Key key, this.id, this.desc, this.title, this.img, this.time, this.userName,this.authFormType, this.lang, this.cou, this.top, this.like,this.dislike,this.commentCount})
       : super(key: key);
 
   @override
@@ -36,9 +43,10 @@ class CategoryDetail extends StatefulWidget {
 class _CategoryDetailState extends State<CategoryDetail> {
   int like = 0;
   int dislike =0;
+
   // Start by showing the button inviting the user to use the example
   _VerificationStep _step = _VerificationStep.SHOWING_BUTTON;
-
+  DocumentSnapshot data;
   void _startVerification() {
     setState(() => _step = _VerificationStep.WORKING);
 
@@ -82,16 +90,24 @@ class _CategoryDetailState extends State<CategoryDetail> {
     }
   }
 
+  void _replyComment(List<String> commentData) async{
+    _replyUserID = commentData[0];
+    _replyCommentID = commentData[1];
+    FocusScope.of(context).requestFocus(_writingTextFocus);
+    _msgTextController.text = '${commentData[0]} ';
+  }
+
   void _moveToFullImage() => Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => FullPhoto(
                 imageUrl: widget.img,
               )));
-
+var Id;
 
   @override
   Widget build(BuildContext context) {
+
     final size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
@@ -116,7 +132,14 @@ class _CategoryDetailState extends State<CategoryDetail> {
                 .orderBy('commentTimeStamp', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
+
               if (!snapshot.hasData) return LinearProgressIndicator();
+              QuerySnapshot documents = snapshot.data;
+              List<DocumentSnapshot> docs = documents.docs;
+              docs.forEach((data) {
+               Id = data.id;
+               print(Id);
+              });
               return Column(
                 children: <Widget>[
                   Expanded(
@@ -178,76 +201,97 @@ class _CategoryDetailState extends State<CategoryDetail> {
                                                 ],
                                               ),
                                               Spacer(),
-                                              PopupMenuButton<int>(
-                                                itemBuilder: (context) => [
-                                                  PopupMenuItem(
-                                                    value: 1,
-                                                    child: Row(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  right: 8.0,
-                                                                  left: 8.0),
-                                                          child: Icon(
-                                                              Icons.report),
-                                                        ),
-                                                        Text("Report"),
-                                                      ],
+                                              Row(
+                                                children: [
+                                                  Padding(
+                                                    padding: EdgeInsets.all(8.0),
+                                                    child: Container(
+
+                                                      child: Row(
+                                                        children: [
+
+                                                          Badge(
+                                                            toAnimate: false,
+                                                            shape: BadgeShape.square,
+                                                            badgeColor:
+                                                            Colors.indigoAccent,
+                                                            borderRadius:
+                                                            BorderRadius.circular(10),
+                                                            badgeContent: Text(
+                                                                widget.lang,
+                                                                style: TextStyle(
+                                                                    color: Colors.white)),
+                                                          ),
+                                                          SizedBox(width: 3,),
+                                                          Badge(
+                                                            toAnimate: false,
+                                                            shape: BadgeShape.square,
+                                                            badgeColor:
+                                                            Colors.indigoAccent,
+                                                            borderRadius:
+                                                            BorderRadius.circular(10),
+                                                            badgeContent: Text(
+                                                                widget.top,
+                                                                style: TextStyle(
+                                                                    color: Colors.white)),
+                                                          ),
+                                                          SizedBox(width: 3,),
+                                                          Badge(
+
+                                                            toAnimate: false,
+                                                            shape: BadgeShape.square,
+                                                            badgeColor:
+                                                            Colors.indigoAccent,
+                                                            borderRadius:
+                                                            BorderRadius.circular(10),
+                                                            badgeContent: Text(
+                                                                widget.cou,
+                                                                style: TextStyle(
+                                                                    color: Colors.white)),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
+                                                  SizedBox(
+                                                    width: 5,
+                                                  ),
                                                 ],
-                                                initialValue: 1,
-                                                onCanceled: () {
-                                                  print(
-                                                      "You have canceled the menu.");
-                                                },
-                                                onSelected: (value) {},
                                               ),
                                             ],
                                           ),
                                         ),
                                         SizedBox(
                                           height: 70,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  SizedBox(
-                                                    width: 10,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment
+                                                  .start,
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment
+                                                  .center,
+                                              children: [
+                                                Text(
+                                                  "Category Title:",
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
                                                   ),
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        "Category Title",
-                                                        style: TextStyle(
-                                                          fontSize: 13,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        widget.title.toString(),
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 16,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ],
+                                                ),
+                                                SizedBox(width:10),
+                                                Text(
+                                                  widget.title.toString(),
+                                                  style: TextStyle(
+                                                    fontWeight:
+                                                    FontWeight.bold,
+                                                    fontSize: 20,
+                                                    color: Colors.black,
                                                   ),
-                                                ],
-                                              ),
-                                            ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                         Container(
@@ -257,7 +301,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
                                         GestureDetector(
                                           onTap: () => _moveToFullImage,
                                           child: SizedBox(
-                                            height: 150,
+                                            height: 250,
                                             child: Padding(
                                                 padding:
                                                     EdgeInsets.only(top: 5),
@@ -291,7 +335,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.start,
                                               crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   "Category Description",
@@ -312,84 +356,19 @@ class _CategoryDetailState extends State<CategoryDetail> {
                                             ),
                                           ),
                                         ),
-                                        Divider(
-                                          height: 2,
-                                          color: Colors.black,
-                                        ),
+                                        Divider(height: 2,color: Colors.black,),
                                         Padding(
                                           padding: const EdgeInsets.only(top:6.0,bottom: 2.0),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                            children: <Widget>[
-                                              GestureDetector(
-
-                                                onTap: () {
-                                                  _startVerification();
-
-                                                },
-                                                child: Row(
-                                                  children: <Widget>[
-                                                    //   Icon(Icons.thumb_up,size: 18,color:  widget.myData.myLikeList.contains(widget.data['postID'])==true &&isDisabled==false? Colors.blue[900] : Colors.black),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left:8.0),
-                                                      child: Text('Like ($like)',
-                                                        style: TextStyle(fontSize: 16,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: Colors.blue[900]),),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              GestureDetector(
-                                                onTap: () {
-
-                                                },
-
-
-                                                child: Row(
-                                                  children: <Widget>[
-                                                    Icon(Icons.thumb_down,size: 18,color:Colors.black),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left:8.0),
-                                                      child: Text('Dislike ($dislike)',
-                                                        style: TextStyle(fontSize: 16,
-                                                            fontWeight: FontWeight.bold,
-                                                            color:Colors.black),),
-
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              GestureDetector(
-                                                onTap: () => {},
-                                                child: Row(
-                                                  children: <Widget>[
-                                                    Icon(Icons.mode_comment,size: 18),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left:8.0),
-                                                      child: Text('Comment (1)',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                          child:TextButton.icon(onPressed: (){
+                                            _moveToContentDetail();
+                                          }, icon:Icon(Icons.post_add,size: 30,),label:Text("Post a problem", style: TextStyle(fontSize: 20),)),
                                         ),
+
                                       ],
                                     ),
                                   ),
                                 ),
-                                snapshot.data.docs.length > 0
-                                    ? ListView(
-                                        primary: false,
-                                        shrinkWrap: true,
-                                        children: Utils.sortDocumentsByComment(
-                                                snapshot.data.docs)
-                                            .map((document) {
-                                         return CommentCategory(data: document,size: size);
-                                        }).toList(),
-                                      )
-                                    : Container(),
+
                               ],
                             ),
                           ),
@@ -397,55 +376,16 @@ class _CategoryDetailState extends State<CategoryDetail> {
                       ),
                     ),
                   ),
-                  _buildTextComposer()
+
                 ],
               );
             }));
   }
 
-  Widget _buildTextComposer() {
-    return new IconTheme(
-      data: new IconThemeData(color: Theme.of(context).colorScheme.secondary),
-      child: new Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: new Row(
-          children: <Widget>[
-            new Flexible(
-              child: new TextField(
-                focusNode: _writingTextFocus,
-                controller: _msgTextController,
-                onSubmitted: _handleSubmitted,
-                decoration:
-                    new InputDecoration.collapsed(hintText: "Write a comment"),
-              ),
-            ),
-            new Container(
-              margin: new EdgeInsets.symmetric(horizontal: 2.0),
-              child: new IconButton(
-                  icon: new Icon(Icons.send),
-                  onPressed: () {
-                    _handleSubmitted(_msgTextController.text);
-                  }),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  Future<void> _handleSubmitted(String text) async {
-    try {
-     if(AuthFormType.anonymous != null){
-       String id = "Guest";
-       await FBCloudStore.commentToPost(_replyUserID == null ? id : _replyUserID,_replyCommentID == null ? widget.id.toString() : _replyCommentID,widget.id.toString(), _msgTextController.text);
-     }
-     else{
-       await FBCloudStore.commentToPost(_replyUserID == null ? "User" : _replyUserID,_replyCommentID == null ? widget.id.toString() : _replyCommentID,widget.id.toString(), _msgTextController.text);
-     }
-    //  await FBCloudStore.updatePostCommentCount(widget.postData);
-      FocusScope.of(context).requestFocus(FocusNode());
-      _msgTextController.text = '';
-    }catch(e){
-      print('error to submit comment');
-    }
+
+  void _moveToContentDetail() {
+    Navigator.push(context, CupertinoPageRoute(builder: (context) => Problem(id:widget.id,desc:widget.desc,title:widget.title,
+      img: widget.img, time: widget.time, userName: widget.userName, like: widget.like, dislike: widget.dislike, commentCount: widget.commentCount, Id: Id, replyComment:_replyComment)));
+
   }
 }

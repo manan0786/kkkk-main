@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterthreadexample/commons/fullPhoto.dart';
-import 'package:flutterthreadexample/controllers/FBCloudStore.dart';
 import 'package:flutterthreadexample/subViews/threadItem.dart';
 
 import 'commons/const.dart';
@@ -107,7 +106,7 @@ class _ContentDetail extends State<ContentDetail> {
               child: new TextField(
                 focusNode: _writingTextFocus,
                 controller: _msgTextController,
-                //onSubmitted: _handleSubmitted,
+              //  onSubmitted: _handleSubmitted,
                 decoration: new InputDecoration.collapsed(
                     hintText: "Write a comment"),
               ),
@@ -118,7 +117,7 @@ class _ContentDetail extends State<ContentDetail> {
               child: new IconButton(
                 icon: new Icon(Icons.send),
                 onPressed: () {
-                  //_handleSubmitted(_msgTextController.text);
+             //     _handleSubmitted(_msgTextController.text);
                 }),
             ),
           ],
@@ -127,7 +126,8 @@ class _ContentDetail extends State<ContentDetail> {
     );
   }
 
-/*  Future<void> _handleSubmitted(String text) async {
+/*
+  Future<void> _handleSubmitted(String text) async {
     try {
       await FBCloudStore.commentToPost(_replyUserID == null ? widget.postData['userName'] : _replyUserID,_replyCommentID == null ? widget.postData['commentID'] : _replyCommentID,widget.postData['postID'], _msgTextController.text, widget.myData,_replyUserID == null ? widget.postData['FCMToken'] : _replyUserFCMToken);
       await FBCloudStore.updatePostCommentCount(widget.postData);

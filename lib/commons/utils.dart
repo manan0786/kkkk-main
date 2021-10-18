@@ -93,6 +93,8 @@ class Utils{
     }
     return myNewProfileData;
   }
+
+
   static Future<MyProfileData> updateDislikeCount(DocumentSnapshot data, bool isDisLikePost,MyProfileData myProfileData,ValueChanged<MyProfileData> updateMyData, bool isThread) async {
     List<String> newDisLikeList = await LocalTempDB.saveDisLikeList(data[isThread ? 'postID' : 'commentID'],myProfileData.myDisLikeList,isDisLikePost,isThread ?'dislikeList':'likeCommnetList');
     MyProfileData myNewProfileData = MyProfileData(
@@ -145,6 +147,46 @@ class Utils{
     for(int i = 0; i < _originalData.length; i++){
       if (commentDocuments[_originalData[i]['commentID']] != null){
         _originalData.insertAll(i+1,commentDocuments[_originalData[i]['commentID']]);
+      }
+    }
+    return _originalData;
+  }
+
+  static List<DocumentSnapshot> sortDocumentsByreply(List<DocumentSnapshot> data){
+    List<DocumentSnapshot> _originalData = data;
+    Map<String,List<DocumentSnapshot>> commentDocuments = Map<String,List<DocumentSnapshot>>();
+    List<int> replyCommentIndex = List<int>();
+    for(int i = 0; i < _originalData.length; i++){
+      for(int j = 0; j < _originalData.length; j++){
+        if (_originalData[i]['replyID'] == _originalData[j]['toreplyID']){
+          List<DocumentSnapshot> savedCommentData;
+          if (commentDocuments[_originalData[i]['replyID']] != null && commentDocuments[_originalData[i]['replyID']].length > 0) {
+            savedCommentData = commentDocuments[_originalData[i]['replyID']];
+          }else {
+            savedCommentData = List<DocumentSnapshot>();
+          }
+          savedCommentData.add(_originalData[j]);
+          commentDocuments[_originalData[i]['replyID']] = savedCommentData;
+          replyCommentIndex.add(j);
+        }
+      }
+    }
+
+    replyCommentIndex.sort((a,b){
+      return b.compareTo(a);
+    });
+
+    // remove comment
+    if(replyCommentIndex.length > 0){
+      for(int i = 0; i < replyCommentIndex.length; i++){
+        _originalData.removeAt(replyCommentIndex[i]);
+      }
+    }
+
+    // Add list to comment
+    for(int i = 0; i < _originalData.length; i++){
+      if (commentDocuments[_originalData[i]['replyID']] != null){
+        _originalData.insertAll(i+1,commentDocuments[_originalData[i]['replyID']]);
       }
     }
     return _originalData;

@@ -2,6 +2,7 @@ import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterthreadexample/views/admin/updatepost.dart';
 
 
 class ManagePosts extends StatefulWidget {
@@ -12,6 +13,17 @@ class ManagePosts extends StatefulWidget {
 }
 
 class _ManagePostsState extends State<ManagePosts> {
+  // For Deleting User
+  CollectionReference posts =
+  FirebaseFirestore.instance.collection('categories');
+  Future<void> deleteUser(id) {
+    // print("User Deleted $id");
+    return posts
+        .doc(id)
+        .delete()
+        .then((value) => print('Post Deleted'))
+        .catchError((error) => print('Failed to Delete user: $error'));
+  }
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -131,6 +143,18 @@ class _ManagePostsState extends State<ManagePosts> {
                                             style: TextStyle(
                                                 color: Colors.white)),
                                       ),
+                                      IconButton(
+                                        onPressed: () async{
+                                          await FirebaseFirestore.instance.runTransaction((Transaction myTransaction) async {
+                                            await myTransaction.delete(snapshot.data.docs[index].reference);
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                          size: 30,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -198,6 +222,35 @@ class _ManagePostsState extends State<ManagePosts> {
                         ),
                       ),
                     ),
+                    Container(
+                      height: 1,
+                      color: Colors.grey[400],
+                    ),
+                    /*SizedBox(
+                      height: 70,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () => {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UpdatePost(
+                                      id: snapshot.data.docs[index].id),
+                                ),
+                              )
+                            },
+                            icon: Icon(
+                              Icons.edit,
+                              color: Colors.orange,
+                              size: 30,
+                            ),
+                          ),
+
+                        ],
+                      ),
+                    ),*/
                   ],
                 ),
               ),
