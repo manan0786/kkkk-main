@@ -40,19 +40,12 @@ class _AddPost extends State<AddPost> {
     }
     FBCloudStore.sendCategoryInFirebase(postID,writingTextController.text,descTextController.text,selectedLanguage,
         selectedCountry,selectedTopic,postImageURL ?? 'NONE', 0, 0,0);
-    setState(() {
-      _isLoading = false;
-    });
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          'Category Added Successfully',
-          style: TextStyle(fontSize: 18.0),
-        ),
-      ),
-    );
+ /*   setState(() {
+      _isLoading = false;
+    });*/
+
+
   }
 
   @override
@@ -321,10 +314,19 @@ class _AddPost extends State<AddPost> {
                   ElevatedButton(onPressed: (){
                     if (_formKey.currentState.validate()) {
 
-                      setState(() {
+                   /*   setState(() {
                         _isLoading = true;
-                      });
+                      });*/
                       _postToFB();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.green,
+                          content: Text(
+                            'Category Added Successfully',
+                            style: TextStyle(fontSize: 18.0),
+                          ),
+                        ),
+                      );
                     }
                   }, child: Text("Add Category"))
                 ],
