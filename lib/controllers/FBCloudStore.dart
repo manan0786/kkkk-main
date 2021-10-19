@@ -8,13 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class FBCloudStore{
   static Future<void> sendPostInFirebase(String postID,String postContent,MyProfileData userProfile,String postImageURL) async{
-    String postFCMToken;
-    if(userProfile.myFCMToken == null){
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      postFCMToken = prefs.get('FCMToken');
-    }else {
-      postFCMToken = userProfile.myFCMToken;
-    }
+
     FirebaseFirestore.instance.collection('thread').doc(postID).set({
       'postID':postID,
       'userName':userProfile.myName,
@@ -25,7 +19,6 @@ class FBCloudStore{
       'postDisLikeCount':0,
       'postLikeCount':0,
       'postCommentCount':0,
-      'FCMToken':postFCMToken
     });
   }
 
@@ -64,12 +57,12 @@ class FBCloudStore{
 
   static Future<void> likeToPost(String postID,MyProfileData userProfile,bool isLikePost) async{
     if (isLikePost) {
-      DocumentReference likeReference = FirebaseFirestore.instance.collection('thread').doc(postID).collection('like').doc(userProfile.myName);
+      DocumentReference likeReference = FirebaseFirestore.instance.collection('categories').doc(postID).collection('like').doc(userProfile.myName);
       await FirebaseFirestore.instance.runTransaction((Transaction myTransaction) async {
         await myTransaction.delete(likeReference);
       });
     }else {
-      await FirebaseFirestore.instance.collection('thread').doc(postID).collection('like').doc(userProfile.myName).set({
+      await FirebaseFirestore.instance.collection('categories').doc(postID).collection('like').doc(userProfile.myName).set({
         'userName':userProfile.myName,
         'userThumbnail':userProfile.myThumbnail,
       });
@@ -90,13 +83,11 @@ class FBCloudStore{
   }
 
   static Future<void> updatePostLikeCount(DocumentSnapshot postData,bool isLikePost,MyProfileData myProfileData) async{
-    postData.reference.update({'postLikeCount': FieldValue.increment(isLikePost ? -1 : 1)});
-    if(!isLikePost){
-      await FBCloudMessaging.instance.sendNotificationMessageToPeerUser('${myProfileData.myName} likes your post','${myProfileData.myName}',postData['FCMToken']);
-    }
+    postData.reference.update({'catLikeCount': FieldValue.increment(isLikePost ? -1 : 1)});
+
   }
   static Future<void> updatePostDisLikeCount(DocumentSnapshot postData,bool isDisLikePost,MyProfileData myProfileData) async{
-    postData.reference.update({'postDisLikeCount': FieldValue.increment(isDisLikePost ? -1 : 1)});
+    postData.reference.update({'catDisLike': FieldValue.increment(isDisLikePost ? -1 : 1)});
     if(!isDisLikePost){
       await FBCloudMessaging.instance.sendNotificationMessageToPeerUser('${myProfileData.myName} dislikes your post','${myProfileData.myName}',postData['FCMToken']);
     }
@@ -108,9 +99,7 @@ class FBCloudStore{
 
   static Future<void> updateCommentLikeCount(DocumentSnapshot postData,bool isLikePost,MyProfileData myProfileData) async{
     postData.reference.update({'commentLikeCount': FieldValue.increment(isLikePost ? -1 : 1)});
-    if(!isLikePost){
-      await FBCloudMessaging.instance.sendNotificationMessageToPeerUser('${myProfileData.myName} likes your comment','${myProfileData.myName}',postData['FCMToken']);
-    }
+
   }
   static Future<void> updateCommentdisLikeCount(DocumentSnapshot postData,bool isLikePost,MyProfileData myProfileData) async{
     postData.reference.update({'commentLikeCount': FieldValue.increment(isLikePost ? -1 : 1)});
@@ -121,7 +110,7 @@ class FBCloudStore{
 
   static Future<void> commentToPost(String toUserID,String toCommentID,String catID,String commentContent) async{
     String commentID = Utils.getRandomString(8) + Random().nextInt(500).toString();
-    FirebaseFirestore.instance.collection('categories').doc(catID).collection('collection').doc(commentID).set({
+    FirebaseFirestore.instance.collection('categories').doc(catID).collection('comment').doc(commentID).set({
       'toUserID':toUserID,
       'commentID':commentID,
       'toCommentID':toCommentID,
@@ -129,6 +118,6 @@ class FBCloudStore{
       'commentContent':commentContent,
       'commentLikeCount':0,
     });
-  //  await FBCloudMessaging.instance.sendNotificationMessageToPeerUser(commentContent,'${userProfile.myName} was commented',postFCMToken);
+
   }
 }

@@ -12,8 +12,8 @@ class MyProfileData{
   final List<String> myLikeList;
   final List<String> myDisLikeList;
   final List<String> myLikeCommnetList;
-  final String myFCMToken;
-  MyProfileData( {this.myDisLikeList,this.myName,this.myThumbnail,this.myLikeList,this.myLikeCommnetList,this.myFCMToken, List<String> myLikedisList,List<String> mydisLikedisList});
+
+  MyProfileData( {this.myDisLikeList,this.myName,this.myThumbnail,this.myLikeList,this.myLikeCommnetList, List<String> myLikedisList,List<String> mydisLikedisList});
 }
 
 const reportMessage = 'Thank you for reporting. We will determine the user\'s information within 24 hours and delete the account or take action to stop it.';

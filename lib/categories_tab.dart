@@ -12,8 +12,7 @@ import '../reportPost.dart';
 class Categories extends StatefulWidget {
   final MyProfileData myData;
   final ValueChanged<MyProfileData> updateMyData;
-  User user;
-  Categories({Key key,this.myData,this.updateMyData, this.user}) : super(key: key);
+  Categories({Key key,this.myData,this.updateMyData}) : super(key: key);
 
   @override
   _CategoriesState createState() => _CategoriesState();
@@ -21,15 +20,14 @@ class Categories extends StatefulWidget {
 
 class _CategoriesState extends State<Categories> {
   bool _isLoading = false;
-  bool value1 = true;
+
   bool selected = false;
   bool selected1 = false;
   bool selected2 = false;
 
-  String name = "";
 
   var selectedLanguage, selectedCountry, selectedTopic;
-  var lang;
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -377,8 +375,22 @@ class _CategoriesState extends State<Categories> {
           }
           else if (snapshot.connectionState == ConnectionState.done && !snapshot.hasData) {
             // Handle no data
-            return Center(
-              child: Text("No Category found."),
+            return Container(
+              child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.error,color: Colors.grey[700],
+                        size: 64,),
+                      Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Text('There is no category',
+                          style: TextStyle(fontSize: 16,color: Colors.grey[700]),
+                          textAlign: TextAlign.center,),
+                      ),
+                    ],
+                  )
+              ),
             );
           } else {
             // Still loading
@@ -572,8 +584,22 @@ class _CategoriesState extends State<Categories> {
           }
           else if (snapshot.connectionState == ConnectionState.done && !snapshot.hasData) {
             // Handle no data
-            return Center(
-              child: Text("No Category found."),
+            return Container(
+              child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.error,color: Colors.grey[700],
+                        size: 64,),
+                      Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Text('There is no category',
+                          style: TextStyle(fontSize: 16,color: Colors.grey[700]),
+                          textAlign: TextAlign.center,),
+                      ),
+                    ],
+                  )
+              ),
             );
           } else {
             // Still loading
@@ -766,9 +792,22 @@ class _CategoriesState extends State<Categories> {
             );
           }
           else if (snapshot.connectionState == ConnectionState.done && !snapshot.hasData) {
-            // Handle no data
-            return Center(
-              child: Text("No Category found."),
+            return Container(
+              child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.error,color: Colors.grey[700],
+                        size: 64,),
+                      Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Text('There is no category',
+                          style: TextStyle(fontSize: 16,color: Colors.grey[700]),
+                          textAlign: TextAlign.center,),
+                      ),
+                    ],
+                  )
+              ),
             );
           } else {
             // Still loading
@@ -778,7 +817,6 @@ class _CategoriesState extends State<Categories> {
     );
   }
   else{
-
     return StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('categories').orderBy('catTimeStamp',descending: true).snapshots(),
             builder: (context,snapshot) {
@@ -963,8 +1001,22 @@ class _CategoriesState extends State<Categories> {
               }
               else if (snapshot.connectionState == ConnectionState.done && !snapshot.hasData) {
                 // Handle no data
-                return Center(
-                  child: Text("No Category found."),
+                return Container(
+                  child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Icon(Icons.error,color: Colors.grey[700],
+                            size: 64,),
+                          Padding(
+                            padding: const EdgeInsets.all(14.0),
+                            child: Text('There is no category',
+                              style: TextStyle(fontSize: 16,color: Colors.grey[700]),
+                              textAlign: TextAlign.center,),
+                          ),
+                        ],
+                      )
+                  ),
                 );
               } else {
                 // Still loading
@@ -978,8 +1030,8 @@ class _CategoriesState extends State<Categories> {
 
   void _moveToContentDetail(DocumentSnapshot data) {
     Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryDetail(id:data.get("catID"),desc:data.get("catDesc"),title:data.get("catTitle"),
-        img: data.get('postImage'), time: data.get("catTimeStamp"), userName: data.get("userName"),
-        lang: data.get("catLan"), top: data.get("catTopic"), cou: data.get("catCountry"), like: data.get("catLikeCount"), dislike: data.get("catDisLike"), commentCount: data.get("commentCount"),)));
+      img: data.get('postImage'), time: data.get("catTimeStamp"), userName: data.get("userName"),
+      lang: data.get("catLan"), top: data.get("catTopic"), cou: data.get("catCountry"), like: data.get("catLikeCount"), dislike: data.get("catDisLike"), commentCount: data.get("commentCount"),postData:data, myData: widget.myData,updateMyDataToMain: widget.updateMyData,)));
 
   }
 }

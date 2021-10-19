@@ -78,7 +78,7 @@ class Utils{
   }
 
   static Future<MyProfileData> updateLikeCount(DocumentSnapshot data, bool isLikePost,MyProfileData myProfileData,ValueChanged<MyProfileData> updateMyData, bool isThread) async {
-    List<String> newLikeList = await LocalTempDB.saveLikeList(data[isThread ? 'catID' : 'commentID'],myProfileData.myLikeList,isLikePost,isThread ?'likeList':'likeCommnetList');
+    List<String> newLikeList = await LocalTempDB.saveLikeList(data[isThread ? 'catID' : 'commentID'],myProfileData.myLikeList,isLikePost,isThread ?'likeList':'likeCommentList');
     MyProfileData myNewProfileData = MyProfileData(
         myName: myProfileData.myName,
         myThumbnail: myProfileData.myThumbnail,
@@ -135,7 +135,6 @@ class Utils{
     replyCommentIndex.sort((a,b){
       return b.compareTo(a);
     });
-
     // remove comment
     if(replyCommentIndex.length > 0){
       for(int i = 0; i < replyCommentIndex.length; i++){
@@ -144,11 +143,11 @@ class Utils{
     }
 
     // Add list to comment
-    for(int i = 0; i < _originalData.length; i++){
+/*    for(int i = 0; i < _originalData.length; i++){
       if (commentDocuments[_originalData[i]['commentID']] != null){
         _originalData.insertAll(i+1,commentDocuments[_originalData[i]['commentID']]);
       }
-    }
+    }*/
     return _originalData;
   }
 

@@ -12,8 +12,8 @@ import 'loginScreen.dart';
 class UserProfile extends StatefulWidget{
   final MyProfileData myData;
   final ValueChanged<MyProfileData> updateMyData;
-  User user;
-  UserProfile({this.myData,this.updateMyData, this.user});
+
+  UserProfile({this.myData,this.updateMyData});
   @override State<StatefulWidget> createState() => _UserProfile();
 }
 
@@ -33,7 +33,7 @@ class _UserProfile extends State<UserProfile>{
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return widget.user.isAnonymous?
+    return /*widget.user.isAnonymous?
     Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -51,7 +51,7 @@ class _UserProfile extends State<UserProfile>{
         ],
       ),
     )
-        :Scaffold(
+        :*/Scaffold(
         body: SingleChildScrollView(
 
       child: Card(
@@ -134,12 +134,42 @@ class _UserProfile extends State<UserProfile>{
   void _showDialog() async {
     TextEditingController _changeNameTextController = TextEditingController();
     await showDialog(
-      context: context, builder: (BuildContext context) {
-        return CircularProgressIndicator();
-    },
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            contentPadding: const EdgeInsets.all(16.0),
+            content: new Row(
+              children: <Widget>[
+                new Expanded(
+                  child: new TextField(
+                    autofocus: true,
+                    decoration: new InputDecoration(
+                        labelText: 'Type your other nick name',
+                        labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        hintText: 'ex) loydkim',
+                        icon: Icon(Icons.edit)),
+                    controller: _changeNameTextController,
+                  ),
+                )
+              ],
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                  child: const Text('CANCEL'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }),
+              new FlatButton(
+                  child: const Text('SUBMIT'),
+                  onPressed: () {
+                    _updateMyData(_changeNameTextController.text,
+                        widget.myData.myThumbnail);
+                    Navigator.pop(context);
+                  })
+            ],
+          );
 
-
-
+        }
     );
   }
 }

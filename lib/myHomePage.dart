@@ -75,8 +75,7 @@ class _MyHomePageState extends State<MyHomePage>  with TickerProviderStateMixin{
         myName: myName,
         myLikeList: prefs.getStringList('likeList'),
         myDisLikeList: prefs.getStringList('dislikeList'),
-        myLikeCommnetList: prefs.getStringList('likeCommnetList'),
-        myFCMToken: prefs.getString('FCMToken'),
+        myLikeCommnetList: prefs.getStringList('likeCommentList'),
       );
     });
 
@@ -126,8 +125,8 @@ class _MyHomePageState extends State<MyHomePage>  with TickerProviderStateMixin{
           TabBarView(
               controller: _tabController,
               children: [
-                Categories(myData: myData,updateMyData: updateMyData, user: _user),
-                UserProfile(myData: myData,updateMyData: updateMyData,user: _user),
+                Categories(myData: myData,updateMyData: updateMyData),
+                UserProfile(myData: myData,updateMyData: updateMyData),
               ]
           ),
           Utils.loadingCircle(_isLoading),

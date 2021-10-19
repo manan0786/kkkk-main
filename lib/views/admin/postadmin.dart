@@ -43,6 +43,7 @@ class _AddPost extends State<AddPost> {
     setState(() {
       _isLoading = false;
     });
+    Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.green,

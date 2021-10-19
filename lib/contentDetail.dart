@@ -56,7 +56,7 @@ class _ContentDetail extends State<ContentDetail> {
         title: Text('Post Detail'),
         centerTitle: true,
       ),
-      body: StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('thread').doc(widget.postData['postID']).collection('comment').orderBy('commentTimeStamp',descending: true).snapshots(),
         builder: (context,snapshot) {
           if (!snapshot.hasData) return LinearProgressIndicator();

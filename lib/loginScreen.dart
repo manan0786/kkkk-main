@@ -75,17 +75,10 @@ class _LoginScreenState extends State<LoginScreen> {
         final userID = currentUser.uid;
         print(userID);
         if (currentUser.uid == user.user.uid) {
-        await dbRef.child(userID).once().then((DataSnapshot snapshot) {
-          setState(() {
-            if(snapshot.value['admin']=='true'){
-              adminLogin();
-            }
-            else if(snapshot.value['admin']=='false'){
-              //userLg();
-              checkEmailVerified(context);
-            }
-          });
-        });
+         /* setState(() {
+            isLoading = false;
+          });*/
+        await checkEmailVerified(context);
         }
       }
 
@@ -122,12 +115,12 @@ class _LoginScreenState extends State<LoginScreen> {
     passwordTextEditingControler.dispose();
     super.dispose();
   }
-
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     Widget content;
-    bool isLoading = false;
+
     switch (_step) {
       case _VerificationStep.SHOWING_BUTTON:
         content = new Column(
@@ -255,11 +248,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         strokeWidth: 5,
                       ) :ElevatedButton(
                           onPressed: () async{
-                            setState(() {
+                          /*  setState(() {
                               isLoading = true;
-                            });
+                            });*/
 
-                            try {
                               if (_formKey.currentState.validate()) {
                                 setState(() {
                                   email = emailTextEditingControler.text;
@@ -267,27 +259,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 });
                                 userLogin();
                               }
-                              await FirebaseAuth.instance.signInWithEmailAndPassword(
-                                  email: emailTextEditingControler.text,
-                                  password: passwordTextEditingControler.text
-                              ).then((value) async {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                SharedPreferences prefs=await SharedPreferences.getInstance();
-
-                                prefs.setString("email",emailTextEditingControler.text);
-                                Navigator.pushNamed(context, MyHomePage.idScreen);
-                              });
-                            }  catch (e) {
-                              if (e.code == 'user-not-found') {
-                                Navigator.pop(context);
-                                print('No user found for that email.');
-                              } else if (e.code == 'wrong-password') {
-                                Navigator.pop(context);
-                                print('Wrong password provided for that user.');
-                              }
-                            }
                           },
 
                           child: Container(
@@ -355,6 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> checkEmailVerified(context) async{
     User _user = await _auth.currentUser;
     if(_user.emailVerified){
+
       SharedPreferences prefs=await SharedPreferences.getInstance();
       prefs.setString("email",emailTextEditingControler.text);
       displayToast("Login Successful", context);
@@ -395,11 +367,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   }
 
-  void userLg() async{
-    SharedPreferences prefs=await SharedPreferences.getInstance();
-    prefs.setString("email",emailTextEditingControler.text);
-    Navigator.pushNamed(context, MyHomePage.idScreen);
-  }
+
 }
 
 displayToast(String message,BuildContext context ){
